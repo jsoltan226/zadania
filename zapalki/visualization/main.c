@@ -3,12 +3,15 @@
 #include <SDL2/SDL_render.h>
 #include <SDL2/SDL_error.h>
 #include <SDL2/SDL_video.h>
+#include <stdint.h>
+#include <stdlib.h>
+#include <string.h>
 
 
 #define WINDOW_X        SDL_WINDOWPOS_CENTERED
 #define WINDOW_Y        SDL_WINDOWPOS_CENTERED
-#define WINDOW_WIDTH    750
-#define WINDOW_HEIGHT   200
+#define WINDOW_WIDTH    (num_len * 80)
+#define WINDOW_HEIGHT   (((float)WINDOW_WIDTH / ((float)num_len / 2.f)) * 1.25f)
 #define WINDOW_TITLE    "zapałki"
 #define WINDOW_FLAGS    SDL_WINDOW_OPENGL
 #define RENDERER_FLAGS  (SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC)
@@ -19,7 +22,11 @@
 #define BG_B 60
 #define BG_A 255
 
-#define TEXT_X          ((WINDOW_WIDTH - (9 * (DIGIT_W * (1.f + DIGIT_PADDING_RIGHT)) + DIGIT_W)) / 2)
+int64_t num = 214325413252379;
+uint8_t num_len = 15;
+#undef DIGIT_W
+#define DIGIT_W         ((float)WINDOW_WIDTH / (num_len  * (1.f + DIGIT_PADDING_RIGHT)))
+#define TEXT_X          ((float)(WINDOW_WIDTH - (DIGIT_W * (num_len * (1.f + DIGIT_PADDING_RIGHT))) + (DIGIT_W * DIGIT_PADDING_RIGHT)) / 2.f )
 #define TEXT_Y          ((WINDOW_HEIGHT - DIGIT_H) / 2)
 
 
@@ -34,12 +41,19 @@ static struct {
     .digitHitboxes = false, .matchHitboxes = false,
 };
 
+
 #ifdef __WINDOWS__
 int WinMain(int argc, char **argv)
 #else
 int main(int argc, char **argv)
 #endif
 {
+    if (argc >= 2) {
+        num = atol(argv[1]);
+        num_len = strlen(argv[1]);
+    }
+    
+
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS)) {
         fprintf(stderr, "Failed to initialize SDL. Details: %s.\n", SDL_GetError());
         return EXIT_FAILURE;
@@ -91,13 +105,10 @@ int main(int argc, char **argv)
 
         /* DRAWING HERE */
         SDL_Rect destRect = { .x = TEXT_X, .y = TEXT_Y, .w = DIGIT_W, .h = DIGIT_H };
-        for (int i = 0; i <= 9; i++) {
-            drawNumber(i, renderer, &destRect, 
-                    (ctx.matchHitboxes * DRWN_MATCH_HITBOXES) | 
-                    (ctx.digitHitboxes * DRWN_DIGIT_HITBOXES)
-                    );
-            destRect.x += destRect.w * (1.f + DIGIT_PADDING_RIGHT);
-        }
+        drawNumber(num, renderer, &destRect, 
+                (ctx.matchHitboxes * DRWN_MATCH_HITBOXES) | 
+                (ctx.digitHitboxes * DRWN_DIGIT_HITBOXES)
+                );
 
         SDL_RenderPresent(renderer);
         SDL_Delay(1000 / FPS);

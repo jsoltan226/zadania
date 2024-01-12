@@ -19,10 +19,10 @@ EXEPREFIX =
 EXESUFFIX =
 OBJDIR = obj
 BINDIR = bin
-SRCS=$(wildcard ./*.c)
-OBJS=$(patsubst %,$(OBJDIR)/%.o,$(shell find . -maxdepth 1 -name "*.c" | xargs basename -as .c))
+SRCS=$(wildcard */*.c) $(wildcard ./*.c)
+OBJS=$(patsubst %,$(OBJDIR)/%.o,$(shell find . -name "*.c" | xargs basename -as .c))
 DEPS=$(patsubst %.o,%.d,$(OBJS))
-EXE=$(BINDIR)/$(EXEPREFIX)zapalki$(EXESUFFIX)
+EXE=$(BINDIR)/$(EXEPREFIX)main$(EXESUFFIX)
 
 .PHONY: all release compile link strip clean mostlyclean update run br
 .NOTPARALLEL: all release br
