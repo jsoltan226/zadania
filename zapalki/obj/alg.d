@@ -1,1 +1,2 @@
-obj/alg.o: alg.c
+obj/alg.o: alg.c dynarr.h
+dynarr.h:
