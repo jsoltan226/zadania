@@ -51,7 +51,10 @@ int main(int argc, char **argv)
                 i++;
             } else {
                 i = 0;
-                addNumToDynArr(current_side_darray, atol(buf));
+				if (buf[0] || (!*c && buf[0])) {
+					addNumToDynArr(current_side_darray, strtol(buf, NULL, 10));
+					memset(buf, 0, MAX_DIGITS + 2);
+				}
 
                 if (*c == '=') current_side_darray = nums_right;
                 else if (*c == '-') {
