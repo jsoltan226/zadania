@@ -10,7 +10,7 @@
  * (A na dodatek w nazwach zmiennych nie mogę używać polskich znaków, co jeszcze bardziej utrudniałoby sprawę)
 */
 
-/* "Długość żadnej z liczb nie przekroczy 10 cyfr. */
+/* "Długość żadnej z liczb nie przekroczy 10 cyfr." */
 #define MAX_DIGITS 10
 /* Maksymalna wartość sumy (Pomijając znaki '+', '-' i '='):
  *  (<max długość zapisu> / <max długość liczb>) * <max wartość jednej liczby>
