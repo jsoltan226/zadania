@@ -15,7 +15,7 @@ int addNumToDynArr(dynArr *darr, int64_t n)
             destroyDynArr(darr);
             return 2;
         }
-        memset(&darr->arr[darr->n_emptySlots - 1], 0, DYNARR_REALLOC_AT_ONCE * sizeof(int64_t));
+        memset(&darr->arr[darr->n_allocatedSlots - 1], 0, DYNARR_REALLOC_AT_ONCE * sizeof(int64_t));
         darr->n_allocatedSlots += DYNARR_REALLOC_AT_ONCE;
         darr->n_emptySlots = DYNARR_REALLOC_AT_ONCE;
     } else {
