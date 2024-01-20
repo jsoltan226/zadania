@@ -174,6 +174,16 @@ int main(int argc, char **argv)
     printf("\b\b ];\n");
 #endif
 
+    for (int R = 0; R < nums_right->len; R++) {
+        for (int L = nums_left->len - 1; L >= 0; L--) {
+            int64_t leftNum = nums_left->arr[L];
+            int64_t rightNum = nums_right->arr[R];
+
+            /* todo: the whole fucking program logic */
+            /* :( */
+        }
+    }
+
     exit_clean(out_msg, EXIT_SUCCESS);
 
 cleanup:

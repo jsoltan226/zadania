@@ -3,7 +3,7 @@ COMMON_CFLAGS=-Wall -fPIC -Dno_tests
 DEPFLAGS?=-MMD -MP
 CCLD?=cc
 LDFLAGS?=-pie
-LIBS?=-lSDL2 -lfreetype -lpng16
+LIBS?=
 STRIP?=strip
 STRIPFLAGS?=-g -s
 

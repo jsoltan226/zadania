@@ -5,7 +5,7 @@
 
 /* Ummm.... WTF is an std::vector????????? */
 
-#define DYNARR_REALLOC_AT_ONCE  5
+#define DYNARR_REALLOC_AT_ONCE  100
 typedef struct {
     int64_t *arr;
     int len, n_allocatedSlots;
