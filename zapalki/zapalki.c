@@ -60,6 +60,8 @@
 dynArr *nums_left = NULL, *nums_right = NULL;
 int64_t sum_left = 0, sum_right = 0;
 
+static dynArr *sort_and_remove_duplicates(dynArr *arr);
+
 int main(int argc, char **argv)
 {
     if (argc != 2) return EXIT_FAILURE;
@@ -74,6 +76,7 @@ int main(int argc, char **argv)
         ERR_CREATE_NUMS_LEFT = 1,
         ERR_CREATE_NUMS_RIGHT = 2,
         ERR_INVALID_SUM_PTRS = 3,
+        ERR_REMOVE_DUPLICATES = 4,
     };
 
     nums_left = createDynArr();
@@ -86,7 +89,7 @@ int main(int argc, char **argv)
 
     char buf[MAX_DIGITS + 2] = { 0 };
     int i = 0;
-    char *c = argv[1];
+    char *str = argv[1];
     dynArr *current_side_darray = nums_left;
     int64_t *current_sum_ptr = &sum_left;
     /* Parse the input string character by character.
@@ -101,30 +104,42 @@ int main(int argc, char **argv)
      * */
 
     do {
+        char c = *str;
         out_msg_len++;
-        if (*c >= '0' && *c <= '9') {
-            buf[i] = *c;
+
+        if (c >= '0' && c <= '9') {
+            buf[i] = c;
             i++;
         } else {
             i = 0;
-			if (buf[0] || (!*c && buf[0])) {
+			if ((buf[0] >= '0' && buf[0] <= '9') || buf[0] == '-') {
                 int64_t num = strtol(buf, NULL, 10);
                 *current_sum_ptr += num;
 				addNumToDynArr(current_side_darray, num);
 				memset(buf, 0, MAX_DIGITS + 2); /* The buffer must be reset before reuse */
 			}
-
-            if (*c == '=') {
+            if (c == '=') {
                 current_side_darray = nums_right;
                 current_sum_ptr = &sum_right;
-            }
-            else if (*c == '-') {
-                buf[i] = *c;
+            } else if (c == '-') {
+                buf[0] = '-';
                 i++;
             }
         }
-    } while(*c++);
+    } while(*str++);
     out_msg_len--;
+
+#ifdef DEBUG
+    printf("before: \nnums_left:\n\t[ ");
+    for (int i = 0; i < nums_left->len; i++) {
+        printf("%li, ", nums_left->arr[i]);
+    }
+    printf("\b\b ];\nnums_right:\n\t[ ");
+    for (int i = 0; i < nums_right->len; i++) {
+        printf("%li, ", nums_right->arr[i]);
+    }
+    printf("\b\b ];\n\nafter: ");
+#endif
 
     /* INITIAL PROCESSING SECTION */
     int64_t difference = labs(sum_left) - labs(sum_right);
@@ -133,14 +148,31 @@ int main(int argc, char **argv)
     if (difference == 0) exit_clean(out_msg, EXIT_SUCCESS);
 
     /* Exit early if the difference in the equation is greater than the maximum change we can make */
-    if (labs(difference) > MAX_SUM) exit_no_solution();
+    if (labs(difference) > MAX_EQUATION_DIFFERENCE) exit_no_solution();
 
-    /* The arrays must be sorted for binary_search() to work properly */
-    quicksort(nums_left->arr, nums_left->len);
-    quicksort(nums_right->arr, nums_right->len);
+    /* The array must be sorted for binary_search() to work properly */
+    nums_left = sort_and_remove_duplicates(nums_left);
+    if (!nums_left)
+        exit_clean("FATAL ERROR: Failed to remove duplicates from nums_left.\n", ERR_REMOVE_DUPLICATES);
+
+    nums_right = sort_and_remove_duplicates(nums_right);
+    if (!nums_right)
+        exit_clean("FATAL ERROR: Failed to remove duplicates from nums_right.\n", ERR_REMOVE_DUPLICATES);
 
     /* MAIN GUESSING SECTION */
     memset(out_msg, 0, strlen(out_msg));
+
+#ifdef DEBUG
+    printf("\nnums_left:\n\t[ ");
+    for (int i = 0; i < nums_left->len; i++) {
+        printf("%li, ", nums_left->arr[i]);
+    }
+    printf("\b\b ];\nnums_right:\n\t[ ");
+    for (int i = 0; i < nums_right->len; i++) {
+        printf("%li, ", nums_right->arr[i]);
+    }
+    printf("\b\b ];\n");
+#endif
 
     exit_clean(out_msg, EXIT_SUCCESS);
 
@@ -150,4 +182,28 @@ cleanup:
     if (nums_right) destroyDynArr(nums_right);
 
     return EXIT_SUCCESS;
+}
+
+static dynArr *sort_and_remove_duplicates(dynArr *darr)
+{
+    /* (TODO: Optimize this part so as to not loop throught the array multiple times) */
+
+    if (!darr) return NULL;
+    if (darr->len < 2) return darr;
+
+    quicksort(darr->arr, darr->len);
+
+    /* Remove duplicates from sorted array */
+    dynArr *newDynArray = createDynArr();
+    if (!newDynArray) return NULL;
+
+    if (addNumToDynArr(newDynArray, darr->arr[0])) return NULL;
+    for (int i = 1; i < darr->len; i++) {
+        if (darr->arr[i] != darr->arr[i - 1]) {
+            if (addNumToDynArr(newDynArray, darr->arr[i])) return NULL;
+        }
+    }
+    destroyDynArr(darr);
+    
+    return newDynArray;
 }

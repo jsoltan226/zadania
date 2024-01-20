@@ -1,0 +1,3 @@
+naprawiłem bug w dynarr.c powodujący, że co 5ty element tablicy był zawsze równy 0
+duplikaty w tablicach `nums_left` i `nums_right` są usuwane
+dodałem print-debugowanie jeżeli zdefiniowane jest makro 'DEBUG' (flaga kompilatora `-DDEBUG`)

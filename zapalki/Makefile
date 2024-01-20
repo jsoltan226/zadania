@@ -27,15 +27,15 @@ DEPS=$(patsubst %.o,%.d,$(OBJS))
 TESTLAUNCHER_EXE_NAME=testlauncher
 TESTLAUNCHER_EXE=$(BINDIR)/$(EXEPREFIX)$(TESTLAUNCHER_EXE_NAME)$(EXESUFFIX)
 EXE=$(BINDIR)/$(EXEPREFIX)zapalki$(EXESUFFIX)
-TESTARGS=1+4-5+1948=5342-134
+TESTARGS=1+4+4+4-4-5+1948=5342-134+134+5342
 
 .PHONY: all release compile link strip clean mostlyclean update run br testrun
 .NOTPARALLEL: all release br
 
-all: CFLAGS = -ggdb -O0 -Wall
+all: CFLAGS = -ggdb -O0 -Wall -DDEBUG -URELEASE
 all: $(OBJDIR) $(BINDIR) compile link $(TESTLAUNCHER_EXE)
 
-release: CFLAGS = -O3 -Wall -Werror -DRELEASE
+release: CFLAGS = -O3 -Wall -Werror -DRELEASE -UDEBUG
 release: clean $(OBJDIR) $(BINDIR) compile link mostlyclean strip run
 
 br: all testrun
