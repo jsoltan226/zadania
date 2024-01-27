@@ -5,24 +5,13 @@
 #include <stdbool.h>
 #include <stddef.h>
 
-#define N_MAX_MATCHES_PER_DIGIT 7
 #define N_DIGITS 10
-#define NOT_A_NUMBER 255
-
-typedef struct {
-    uint8_t originBefore, targetBefore;
-    uint8_t originAfter, targetAfter;
-    int32_t delta;
-} Rearrangement;
-
-typedef struct {
-    Rearrangement *ptr;
-    size_t len;
-} RearrangementArray;
 
 typedef unsigned char m_Digit;
-
-/*     
+/* Like a 7-segment display, where each bit represents a segment.
+ * This is used to represent a number in the format required by this challenge.
+ * The bit being set to 1 indicates that a match is present in the given segment.
+ *
  *        bit 1    
  *        =======
  * bit 2 |       | bit 3
@@ -35,9 +24,12 @@ typedef unsigned char m_Digit;
  *        =======
  *        bit 7 ^
  *
- *  Bit 8 is unused
+ *  Bit 8 is obviously unused
  *  Bits are read from right to left!
 */
+#define N_MAX_MATCHES_PER_DIGIT 7
+
+/* Pretty self explanatory */
 static const m_Digit matchLayouts[N_DIGITS] = { 
     0b01110111, /* 0 */
     0b00100100, /* 1 */
@@ -51,11 +43,36 @@ static const m_Digit matchLayouts[N_DIGITS] = {
     0b01101111  /* 9 */
 };
 
+/* A 'Rearrangement' is a struct that can hold data about a (by implication) valid way
+ * to move a match from one digit to another.
+ * It keeps track of how the digits looked like before and after the rearrangement,
+ * as well as the difference between the 'before' and 'after' states. */
+typedef struct {
+    int8_t originBefore, targetBefore;
+    int8_t originAfter, targetAfter;
+    int16_t delta;
+} Rearrangement;
+#define NOT_A_NUMBER -1
+
+/* Basically a half-baked std::vector<Rearrangement> */
+typedef struct {
+    Rearrangement *ptr;
+    size_t len;
+} RearrangementArray;
+
+
+/* Currently not working */
 bool isElligibleForRearrangement(int64_t num, Rearrangement *rearrangement);
-RearrangementArray *calculatePossibleRearrangements();
+
 #ifdef DEBUG
+/* I think you can guess what this does... */
+RearrangementArray *calculatePossibleRearrangements();
+
+/* And this... */
 void printRearrangements(RearrangementArray *rarr);
 #endif
+
+/* And also this. */
 void destroyRearrangementArray(RearrangementArray *rarr);
 
 #endif /* REARRANGEMENTS_H_ */

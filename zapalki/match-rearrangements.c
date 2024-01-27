@@ -1,8 +1,10 @@
 #include "match-rearrangements.h"
 #include <stdbool.h>
 #include <stdlib.h>
-#include <stdio.h>
 #include <stdint.h>
+#ifdef DEBUG
+#include <stdio.h>
+#endif
 
 bool isElligibleForRearrangement(int64_t num, Rearrangement *rearrangement)
 {
@@ -11,6 +13,7 @@ bool isElligibleForRearrangement(int64_t num, Rearrangement *rearrangement)
 
 static int addRearrangement(RearrangementArray *rarr, uint8_t originBefore, uint8_t targetBefore, uint8_t originAfter, uint8_t targetAfter);
 
+#ifdef DEBUG
 RearrangementArray *calculatePossibleRearrangements()
 {
     RearrangementArray *rarr = (RearrangementArray*)malloc(sizeof(RearrangementArray));
@@ -18,6 +21,25 @@ RearrangementArray *calculatePossibleRearrangements()
     Rearrangement *r = rarr->ptr;
     if (!r) return NULL;
     
+    /* This whole process goes as follows: 
+     *  1. Pick a number from which the match will be moved, let's call it the 'origin';
+     *  2. Pick a number to which the match will be moved, the 'target';
+     *
+     *  3. Pick a segment on the origin that has a match on it, call it the 'match_original'
+     *  4. Pick a segment on the target that doesn't have a match on it, this will be the 'match_moved' one 
+     *
+     *  5. If 'origin' and 'target' are the same:
+     *      5.1.1 Remove the match at 'match_original' and place one for 'match_moved' for both 'origin' and 'target'
+     *      
+     *  5.1 If 'origin' and 'target' are different:
+     *      5.1.1 Place a match in the 'match_moved' segment of 'target' 
+     *      5.1.2 Remove the match at 'match_original' in 'origin' 
+     *
+     *  6. Check if both 'origin' and 'target' are valid numbers
+     *      If they are, the current rearrangement is valid. 
+     *
+     *  7. Repeat the process for all combinations of origins, targets and match displacements. */
+
     for (int i = 0; i < N_DIGITS; i++) {
         const m_Digit d_origin = matchLayouts[i];
 
@@ -56,6 +78,7 @@ RearrangementArray *calculatePossibleRearrangements()
 
     return rarr;
 }
+#endif
 
 void destroyRearrangementArray(RearrangementArray *rarr)
 {
@@ -68,7 +91,7 @@ void printRearrangements(RearrangementArray *rarr)
 {
     printf("===== BEGIN REARRANGEMENT ARRAY =====\n");
     for (int i = 0; i < rarr->len; i++) {
-        if (rarr->ptr[i].targetBefore == NOT_A_NUMBER) {
+        if (rarr->ptr[i].targetBefore == NOT_A_NUMBER && rarr->ptr[i].targetAfter == NOT_A_NUMBER) {
             printf("%u -> %u; delta %i;\n", rarr->ptr[i].originBefore, rarr->ptr[i].originAfter, rarr->ptr[i].delta);
         } else {
             printf("%u, %u -> %u, %u; delta %i;\n", rarr->ptr[i].originBefore, rarr->ptr[i].targetBefore, rarr->ptr[i].originAfter, rarr->ptr[i].targetAfter, rarr->ptr[i].delta);
