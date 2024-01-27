@@ -1,0 +1,12 @@
+#include "match-rearrangements.h"
+
+int main(void)
+{
+    RearrangementArray *rarr = calculatePossibleRearrangements();
+    if (!rarr) return 1;
+
+    printRearrangements(rarr);
+    destroyRearrangementArray(rarr);
+
+    return 0;
+}

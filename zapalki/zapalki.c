@@ -48,19 +48,29 @@
  */
 #define MAX_NUM_DIFFERENCE MAX_EQUATION_DIFFERENCE
 
-/* Some shortucts for reducing the amount of error-checking code */
-#define exit_clean(message, code) do { \
-        fprintf(code != 0 ? stderr : stdout, "%s", message); \
-        goto cleanup; \
-        return code; \
-    } while(0)
 
-#define exit_no_solution() exit_clean("no\n", EXIT_SUCCESS)
-
-dynArr *nums_left = NULL, *nums_right = NULL;
+dynArr *nums_left = NULL, *nums_right = NULL, *nums_merged = NULL;
 int64_t sum_left = 0, sum_right = 0;
 
 static dynArr *sort_and_remove_duplicates(dynArr *arr);
+static void cleanup(const char *msg, int code);
+
+/* Some shortucts for reducing the amount of error-checking code */
+
+/* Initially there was a 'cleanup' label which would be called with `goto`,
+ * but the c++ compiler pretty much forbids the useage of it,
+ * so I had to replace the label with a normal function. */
+#define exit_clean(message, code) do { \
+        cleanup(message, code); \
+/* Instead of the call above, it looked something like this:
+ *      fprintf(code != 0 ? stderr : stdout, "%s", message);
+ *      goto cleanup;
+*/ \
+        return code; \
+    } while(0);
+/* And yes, the only reason I didn't rewrite the cleanup/exit stuff is because I'm lazy. Deal with it. */
+
+#define exit_no_solution() exit_clean("no", EXIT_SUCCESS)
 
 int main(int argc, char **argv)
 {
@@ -77,6 +87,7 @@ int main(int argc, char **argv)
         ERR_CREATE_NUMS_RIGHT = 2,
         ERR_INVALID_SUM_PTRS = 3,
         ERR_REMOVE_DUPLICATES = 4,
+        ERR_MERGE_EQUATION_SIDES = 5,
     };
 
     nums_left = createDynArr();
@@ -131,18 +142,18 @@ int main(int argc, char **argv)
 
 #ifdef DEBUG
     printf("before: \nnums_left:\n\t[ ");
-    for (int i = 0; i < nums_left->len; i++) {
+    for (uint32_t i = 0; i < nums_left->len; i++) {
         printf("%li, ", nums_left->arr[i]);
     }
     printf("\b\b ];\nnums_right:\n\t[ ");
-    for (int i = 0; i < nums_right->len; i++) {
+    for (uint32_t i = 0; i < nums_right->len; i++) {
         printf("%li, ", nums_right->arr[i]);
     }
     printf("\b\b ];\n\nafter: ");
 #endif
 
     /* INITIAL PROCESSING SECTION */
-    int64_t difference = labs(sum_left) - labs(sum_right);
+    const int64_t difference = labs(sum_left) - labs(sum_right);
 
     /* Exit early if the equation is already valid */
     if (difference == 0) exit_clean(out_msg, EXIT_SUCCESS);
@@ -150,48 +161,46 @@ int main(int argc, char **argv)
     /* Exit early if the difference in the equation is greater than the maximum change we can make */
     if (labs(difference) > MAX_EQUATION_DIFFERENCE) exit_no_solution();
 
-    /* The array must be sorted for binary_search() to work properly */
-    nums_left = sort_and_remove_duplicates(nums_left);
-    if (!nums_left)
-        exit_clean("FATAL ERROR: Failed to remove duplicates from nums_left.\n", ERR_REMOVE_DUPLICATES);
+    /* Move all numbers to one size of the equation */
+    dynArr *nums_longer = NULL, *nums_shorter = NULL;
+    if (nums_left->len > nums_right->len) {
+        nums_longer = nums_left;
+        nums_shorter = nums_right;
+    } else {
+        nums_longer = nums_right;
+        nums_shorter = nums_left;
+    }
+    for (uint32_t i = 0; i < nums_shorter->len; i++) {
+        nums_shorter->arr[i] = -(nums_shorter->arr[i]);
+    }
 
-    nums_right = sort_and_remove_duplicates(nums_right);
-    if (!nums_right)
-        exit_clean("FATAL ERROR: Failed to remove duplicates from nums_right.\n", ERR_REMOVE_DUPLICATES);
+    nums_merged = mergeDynArrs(nums_longer, nums_shorter);
+    if (!nums_merged)
+        exit_clean("FATAL ERROR: Failed to merge nums_left with nums_right.\n", ERR_MERGE_EQUATION_SIDES);
+    nums_left = nums_right = nums_shorter = nums_longer = NULL;
+
+
+    /* The array must be sorted for binary_search() to work properly */
+    nums_merged = sort_and_remove_duplicates(nums_merged);
+    if (!nums_merged)
+        exit_clean("FATAL ERROR: Failed to remove duplicates from nums_merged.\n", ERR_REMOVE_DUPLICATES);
 
     /* MAIN GUESSING SECTION */
     memset(out_msg, 0, strlen(out_msg));
 
 #ifdef DEBUG
-    printf("\nnums_left:\n\t[ ");
-    for (int i = 0; i < nums_left->len; i++) {
-        printf("%li, ", nums_left->arr[i]);
-    }
-    printf("\b\b ];\nnums_right:\n\t[ ");
-    for (int i = 0; i < nums_right->len; i++) {
-        printf("%li, ", nums_right->arr[i]);
+    printf("\nnums_merged:\n\t[ ");
+    for (uint32_t i = 0; i < nums_merged->len; i++) {
+        printf("%li, ", nums_merged->arr[i]);
     }
     printf("\b\b ];\n");
 #endif
 
-    for (int R = 0; R < nums_right->len; R++) {
-        for (int L = nums_left->len - 1; L >= 0; L--) {
-            int64_t leftNum = nums_left->arr[L];
-            int64_t rightNum = nums_right->arr[R];
-
-            /* todo: the whole fucking program logic */
-            /* :( */
-        }
+    for (uint32_t i = 0; i < nums_merged->len; i++) {
+        int64_t currentNum = nums_merged->arr[i];
+        currentNum++;
     }
-
     exit_clean(out_msg, EXIT_SUCCESS);
-
-cleanup:
-    /* CLEANUP SECTION */
-    if (nums_left) destroyDynArr(nums_left);
-    if (nums_right) destroyDynArr(nums_right);
-
-    return EXIT_SUCCESS;
 }
 
 static dynArr *sort_and_remove_duplicates(dynArr *darr)
@@ -208,7 +217,7 @@ static dynArr *sort_and_remove_duplicates(dynArr *darr)
     if (!newDynArray) return NULL;
 
     if (addNumToDynArr(newDynArray, darr->arr[0])) return NULL;
-    for (int i = 1; i < darr->len; i++) {
+    for (uint32_t i = 1; i < darr->len; i++) {
         if (darr->arr[i] != darr->arr[i - 1]) {
             if (addNumToDynArr(newDynArray, darr->arr[i])) return NULL;
         }
@@ -216,4 +225,14 @@ static dynArr *sort_and_remove_duplicates(dynArr *darr)
     destroyDynArr(darr);
     
     return newDynArray;
+}
+
+static void cleanup(const char *msg, int code)
+{
+    fprintf(code != 0 ? stderr : stdout, "%s\n", msg);
+
+    /* CLEANUP SECTION */
+    if (nums_left) destroyDynArr(nums_left);
+    if (nums_right) destroyDynArr(nums_right);
+    if (nums_merged) destroyDynArr(nums_merged);
 }
