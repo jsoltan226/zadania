@@ -62,7 +62,7 @@ typedef struct {
 
 
 /* Currently not working */
-bool isElligibleForRearrangement(int64_t num, Rearrangement *rearrangement);
+bool isElligibleForRearrangement(int64_t num1, int64_t num2, Rearrangement *rearrangement);
 
 #ifdef DEBUG
 /* I think you can guess what this does... */

@@ -6,7 +6,7 @@
 #include <stdio.h>
 #endif
 
-bool isElligibleForRearrangement(int64_t num, Rearrangement *rearrangement)
+bool isElligibleForRearrangement(int64_t num, int64_t num2, Rearrangement *rearrangement)
 {
     return false;
 }
@@ -66,7 +66,7 @@ RearrangementArray *calculatePossibleRearrangements()
                         if (new_d_origin == matchLayouts[k]) newOriginNum = k;
                         if (new_d_target == matchLayouts[k]) newTargetNum = k;
                     }
-                    if (newOriginNum > 0 && newTargetNum > 0) {
+                    if (newOriginNum >= 0 && newTargetNum >= 0) {
                         if (addRearrangement(rarr, i, j, newOriginNum, newTargetNum)) {
                             fprintf(stderr, "Failed to add %u, %u -> %u, %u rearrangement.\n", i, j, newOriginNum, newTargetNum);
                         }
