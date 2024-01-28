@@ -1,3 +1,4 @@
 dodałem funkcję obliczjącą wszystkie możliwe przstawienia zapałek
 (update) dodałem komentarz w match-rearrangements.c i -|-.h
 naprawiłem bug powodujący że funkcja calculatePossibleRearrangements() nie działała, gdy przekładaliśmy zapałkę z dowolnej cyfry na 0.
+funkcja isElligibleForRearrangement działa... prawie

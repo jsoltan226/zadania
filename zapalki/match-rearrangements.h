@@ -6,6 +6,7 @@
 #include <stddef.h>
 
 #define N_DIGITS 10
+#define DIGIT_STR_BUF_SIZE 64
 
 typedef unsigned char m_Digit;
 /* Like a 7-segment display, where each bit represents a segment.
@@ -52,7 +53,8 @@ typedef struct {
     int8_t originAfter, targetAfter;
     int16_t delta;
 } Rearrangement;
-#define NOT_A_NUMBER -1
+#define NOT_A_NUMBER_I8 -1
+#define NOT_A_NUMBER_I64 (INT64_MIN + 1)
 
 /* Basically a half-baked std::vector<Rearrangement> */
 typedef struct {
@@ -61,7 +63,9 @@ typedef struct {
 } RearrangementArray;
 
 
-/* Currently not working */
+/* returns true if there are digits in `num1` and `num2` that can be rearranged in the way described by `rearrangement`.
+ * if one of the numbers is `NOT_A_NUMBER_I64`, this function will check for a rearrangement just inside the one real number
+ *  that was supplied. */
 bool isElligibleForRearrangement(int64_t num1, int64_t num2, Rearrangement *rearrangement);
 
 #ifdef DEBUG

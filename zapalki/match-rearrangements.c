@@ -2,18 +2,43 @@
 #include <stdbool.h>
 #include <stdlib.h>
 #include <stdint.h>
-#ifdef DEBUG
 #include <stdio.h>
-#endif
 
-bool isElligibleForRearrangement(int64_t num, int64_t num2, Rearrangement *rearrangement)
+bool isElligibleForRearrangement(int64_t num1, int64_t num2, Rearrangement *rearrangement)
 {
+    if ((num1 == NOT_A_NUMBER_I64 && num2 == NOT_A_NUMBER_I64) || rearrangement == NULL) return false;
+
+    char num1str[DIGIT_STR_BUF_SIZE] = { 0 };
+    char num2str[DIGIT_STR_BUF_SIZE] = { 0 };
+    snprintf(num1str, DIGIT_STR_BUF_SIZE - 1, "%li", num1);
+    snprintf(num2str, DIGIT_STR_BUF_SIZE - 1, "%li", num2);
+
+    char *c_ptr_1 = num1str;
+    char *c_ptr_2 = num2str;
+    do {
+        if (*c_ptr_1 == '-' || !*c_ptr_1) continue;
+        int8_t current_num1_digit = (*c_ptr_1) - 48;
+        if (num2 == NOT_A_NUMBER_I64) {
+            if (rearrangement->originBefore == current_num1_digit && rearrangement->targetBefore == NOT_A_NUMBER_I8)
+                return true;
+        }
+        do {
+            if (*c_ptr_2 == '-' || !*c_ptr_2) continue;
+            int8_t current_num2_digit = (*c_ptr_2) - 48;
+
+            if ((rearrangement->originBefore == current_num1_digit && rearrangement->targetBefore == current_num2_digit) || 
+                (rearrangement->originBefore == current_num1_digit && rearrangement->targetBefore == NOT_A_NUMBER_I8 && num1 == NOT_A_NUMBER_I64)
+                    ) {
+                return true;
+            }
+        } while (*c_ptr_2++);
+    } while (*c_ptr_1++);
     return false;
 }
 
+#ifdef DEBUG
 static int addRearrangement(RearrangementArray *rarr, uint8_t originBefore, uint8_t targetBefore, uint8_t originAfter, uint8_t targetAfter);
 
-#ifdef DEBUG
 RearrangementArray *calculatePossibleRearrangements()
 {
     RearrangementArray *rarr = (RearrangementArray*)malloc(sizeof(RearrangementArray));
@@ -91,7 +116,7 @@ void printRearrangements(RearrangementArray *rarr)
 {
     printf("===== BEGIN REARRANGEMENT ARRAY =====\n");
     for (int i = 0; i < rarr->len; i++) {
-        if (rarr->ptr[i].targetBefore == NOT_A_NUMBER && rarr->ptr[i].targetAfter == NOT_A_NUMBER) {
+        if (rarr->ptr[i].targetBefore == NOT_A_NUMBER_I8 && rarr->ptr[i].targetAfter == NOT_A_NUMBER_I8) {
             printf("%u -> %u; delta %i;\n", rarr->ptr[i].originBefore, rarr->ptr[i].originAfter, rarr->ptr[i].delta);
         } else {
             printf("%u, %u -> %u, %u; delta %i;\n", rarr->ptr[i].originBefore, rarr->ptr[i].targetBefore, rarr->ptr[i].originAfter, rarr->ptr[i].targetAfter, rarr->ptr[i].delta);
@@ -99,7 +124,6 @@ void printRearrangements(RearrangementArray *rarr)
     }
     printf("===== END REARRANGEMENT ARRAY =====\n");
 }
-#endif
 
 static int addRearrangement(RearrangementArray *rarr, uint8_t originBefore, uint8_t targetBefore, uint8_t originAfter, uint8_t targetAfter)
 {
@@ -110,9 +134,9 @@ static int addRearrangement(RearrangementArray *rarr, uint8_t originBefore, uint
 
     if (originBefore == targetBefore) {
         r->originBefore = originBefore;
-        r->targetBefore = NOT_A_NUMBER;
+        r->targetBefore = NOT_A_NUMBER_I8;
         r->originAfter = originAfter;
-        r->targetAfter = NOT_A_NUMBER;
+        r->targetAfter = NOT_A_NUMBER_I8;
         r->delta = originAfter - originBefore;
     } else {
         r->originBefore = originBefore;
@@ -126,3 +150,4 @@ static int addRearrangement(RearrangementArray *rarr, uint8_t originBefore, uint
     rarr->len++;
     return 0;
 }
+#endif

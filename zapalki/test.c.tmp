@@ -1,11 +1,41 @@
+#ifndef DEBUG
+#define DEBUG
+#endif
 #include "match-rearrangements.h"
+#include <stdio.h>
+#include <stdlib.h>
 
-int main(void)
+
+int main(int argc, char **argv)
 {
+    int64_t nums[argc - 1];
+    for (int i = 1; i < argc; i++) {
+        nums[i - 1] = strtol(argv[i], NULL, 10);
+    }
     RearrangementArray *rarr = calculatePossibleRearrangements();
     if (!rarr) return 1;
 
     printRearrangements(rarr);
+
+    for (int i = 0; i < sizeof(nums) / sizeof(int64_t); i++) {
+        for (int k = 0; k < rarr->len; k++) {
+            if (isElligibleForRearrangement(nums[i], NOT_A_NUMBER_I64, &rarr->ptr[k])) {
+                printf("origin: %li, rearrangement: %u->%u; delta: %i;\n", nums[i],
+                        rarr->ptr[k].originBefore, rarr->ptr[k].originAfter, rarr->ptr[k].delta);
+            }
+        }
+        for (int j = 0; j < sizeof(nums) / sizeof(int64_t); j++) {
+            for (int k = 0; k < rarr->len; k++) {
+                if (isElligibleForRearrangement(nums[i], nums[j], &rarr->ptr[k])) {
+                    printf("origin: %li, target: %li, rearrangement: %u, %u -> %u, %u; delta: %i;\n", nums[i], nums[j],
+                            rarr->ptr[k].originBefore, rarr->ptr[k].originAfter,
+                            rarr->ptr[k].targetBefore, rarr->ptr[k].targetAfter,
+                            rarr->ptr[k].delta);
+                }
+            }
+        }
+    }
+
     destroyRearrangementArray(rarr);
 
     return 0;
