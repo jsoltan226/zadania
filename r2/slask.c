@@ -39,7 +39,9 @@ int main(void)
 
 static uint32_t query(uint32_t N, uint64_t a, uint64_t b)
 {
+	//printf("a: %lu; b: %lu; N: %u\n", a, b, N);
     if (a == b) return a;
+	if (N == 1) return a < b ? a : b;
     dynArr *subtreesA = NULL, *subtreesB = NULL;   
     subtreesA = createDynArr();
     subtreesB = createDynArr();
@@ -47,10 +49,10 @@ static uint32_t query(uint32_t N, uint64_t a, uint64_t b)
     uint64_t x = a;
     dynArr *subtreeArr = subtreesA;
     for (int i = 0; i < 2; i++) {
-        while (x > 0) {
+		do {
             addNumToDynArr(subtreeArr, x);
             x = x / N + (x % N > 1);
-        }
+        } while (x > 1);
         x = b;
         subtreeArr = subtreesB;
     }
