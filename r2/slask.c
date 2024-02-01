@@ -52,7 +52,7 @@ static uint32_t query(uint32_t N, uint64_t a, uint64_t b)
 		do {
             addNumToDynArr(subtreeArr, x);
             x = x / N + (x % N > 1);
-        } while (x > 1);
+        } while (x > 0);
         x = b;
         subtreeArr = subtreesB;
     }
